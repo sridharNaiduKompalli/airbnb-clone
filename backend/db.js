@@ -496,24 +496,36 @@ export async function createListing(listing, hostId, hostName) {
   if (isPostgres) {
     try {
       // Support both images[] array and single image URL
-      const imageUrl = listing.image || (listing.images && listing.images[0]) || '';
-      const imagesArray = listing.images && listing.images.length > 0
+      const imageUrl = listing.image || (listing.images && listing.images[0]) || 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800';
+      const imagesArray = (listing.images && listing.images.length > 0)
         ? listing.images
         : [imageUrl, imageUrl, imageUrl, imageUrl, imageUrl];
+
+      const hostAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150';
+      const amenities = listing.amenities && listing.amenities.length > 0 ? listing.amenities : ['Wifi', 'Kitchen'];
 
       const res = await pool.query(
         `INSERT INTO listings (title, description, price, location, image, images, rating, reviews_count, type, host_name, host_avatar, amenities, host_id)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
         [
-          listing.title, listing.description, Number(listing.price), listing.location,
-          imageUrl, imagesArray, 5.0, 0, listing.type || 'cabins',
-          hostName, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150',
-          listing.amenities || ['Wifi'], hostId
+          listing.title,
+          listing.description || 'A wonderful place to stay.',
+          Number(listing.price) || 100,
+          listing.location || 'Unknown Location',
+          imageUrl,
+          imagesArray,
+          5.0,
+          0,
+          listing.type || 'cabins',
+          hostName || 'Host',
+          hostAvatar,
+          amenities,
+          hostId
         ]
       );
       return res.rows[0];
     } catch (error) {
-      console.error(error);
+      console.error('createListing DB error:', error.message, error.detail || '');
       throw error;
     }
   }
