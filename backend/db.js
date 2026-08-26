@@ -360,6 +360,13 @@ export async function initializeDatabase() {
       }
       console.log("Mock listings seeded successfully.");
     }
+
+    // Always fix sequences in case seeding inserted explicit IDs
+    await client.query(`SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 0) + 1, false)`);
+    await client.query(`SELECT setval('bookings_id_seq', COALESCE((SELECT MAX(id) FROM bookings), 0) + 1, false)`);
+    await client.query(`SELECT setval('users_id_seq', COALESCE((SELECT MAX(id) FROM users), 0) + 1, false)`);
+    console.log("Sequences synced.");
+
   } catch (error) {
     console.error("Database initialization failed:", error);
   } finally {
