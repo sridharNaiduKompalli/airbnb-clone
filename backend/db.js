@@ -711,26 +711,24 @@ export async function initializeDatabase() {
     await client.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;`).catch(() => {});
     await client.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_status VARCHAR(50) DEFAULT 'completed';`).catch(() => {});
 
-    // Seed mock data if listings table is empty
-    const checkListings = await client.query('SELECT COUNT(*) FROM listings');
-    if (parseInt(checkListings.rows[0].count) === 0) {
-      console.log("Seeding initial mock listings to PostgreSQL...");
-      // Add default admin user
-      const adminInsert = await client.query(
-        `INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email RETURNING id`,
-        ['Admin User', 'admin@tropica.com', '$2b$10$C8.1zM.1T1/aG0.1H1.1/.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1', 'admin'] // Fake hash for mock, they should register
-      );
-      const adminId = adminInsert.rows[0].id;
+    // Seed mock data to ensure all 50 items are present
+    console.log("Ensuring all 50 mock listings are seeded to PostgreSQL...");
+    // Add default admin user
+    const adminInsert = await client.query(
+      `INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email RETURNING id`,
+      ['Admin User', 'admin@tropica.com', '$2b$10$C8.1zM.1T1/aG0.1H1.1/.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1', 'admin'] // Fake hash for mock, they should register
+    );
+    const adminId = adminInsert.rows[0].id;
 
-      for (const item of mockListings) {
-        await client.query(
-          `INSERT INTO listings (id, title, description, price, location, image, images, rating, reviews_count, type, host_name, host_avatar, amenities, host_id)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
-          [item.id, item.title, item.description, item.price, item.location, item.image, item.images || [item.image], item.rating, item.reviews_count, item.type, item.host_name, item.host_avatar, item.amenities, adminId]
-        );
-      }
-      console.log("Mock listings seeded successfully.");
+    for (const item of mockListings) {
+      await client.query(
+        `INSERT INTO listings (id, title, description, price, location, image, images, rating, reviews_count, type, host_name, host_avatar, amenities, host_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         ON CONFLICT (id) DO NOTHING`,
+        [item.id, item.title, item.description, item.price, item.location, item.image, item.images || [item.image], item.rating, item.reviews_count, item.type, item.host_name, item.host_avatar, item.amenities, adminId]
+      );
     }
+    console.log("Mock listings seeded successfully.");
 
     // Always fix sequences in case seeding inserted explicit IDs
     await client.query(`SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 0) + 1, false)`);

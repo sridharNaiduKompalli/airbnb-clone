@@ -8,7 +8,6 @@ import Auth from './pages/Auth.jsx';
 import AddPlace from './pages/AddPlace.jsx';
 import Checkout from './pages/Checkout.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
-import Favourites from './pages/Favourites.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
 import Wishlist from './pages/Wishlist.jsx';
 
@@ -39,7 +38,6 @@ function App() {
           <Route path="/add-place" element={<AddPlace />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/favourites" element={<Favourites />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/dashboard" element={<UserDashboard />} />
         </Routes>

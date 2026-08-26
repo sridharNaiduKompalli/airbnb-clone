@@ -165,12 +165,6 @@ function Header({ apiHealth }) {
                       </span>
                     )}
                   </Link>
-
-                  <Link to="/favourites" onClick={() => setDropdownOpen(false)} className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100">
-                    <Bookmark className="w-4 h-4 mr-3 text-gray-400" />
-                    My Favourites
-                  </Link>
-                  
                   <Link to="/add-place" onClick={() => setDropdownOpen(false)} className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100">
                     <PlusCircle className="w-4 h-4 mr-3 text-gray-400" />
                     Host an experience
