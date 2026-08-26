@@ -9,6 +9,7 @@ function Header({ apiHealth }) {
   const { items: wishlistItems } = useWishlistStore();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   const handleLogout = () => {
     logout();
@@ -30,14 +31,30 @@ function Header({ apiHealth }) {
         </Link>
 
         {/* Center Search Bar */}
-        <div className="hidden md:flex items-center border border-gray-200 rounded-full py-2 px-4 shadow-sm hover:shadow-md cursor-pointer transition">
-          <span className="text-sm font-semibold px-4 border-r border-gray-200">Anywhere</span>
-          <span className="text-sm font-semibold px-4 border-r border-gray-200">Any week</span>
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (searchQuery.trim()) {
+              navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+            } else {
+              navigate('/');
+            }
+          }}
+          className="hidden md:flex items-center border border-gray-200 rounded-full py-2 pl-4 pr-2 shadow-sm hover:shadow-md transition focus-within:shadow-md focus-within:border-gray-300"
+        >
+          <input 
+            type="text" 
+            placeholder="Search destinations..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="text-sm font-semibold px-2 w-48 outline-none bg-transparent placeholder-gray-500"
+          />
+          <span className="text-sm font-semibold px-4 border-l border-r border-gray-200 text-gray-500">Any week</span>
           <span className="text-sm text-gray-500 px-4">Add guests</span>
-          <div className="bg-brand text-white p-2 rounded-full">
+          <button type="submit" className="bg-brand text-white p-2 rounded-full hover:bg-rose-600 transition">
             <Search className="h-4 w-4" />
-          </div>
-        </div>
+          </button>
+        </form>
 
         {/* Right Nav */}
         <div className="flex items-center space-x-3 relative">

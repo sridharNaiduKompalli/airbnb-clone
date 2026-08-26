@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import FilterBar from '../components/FilterBar.jsx';
 import ListingCard from '../components/ListingCard.jsx';
 import Loader from '../components/Loader.jsx';
 
 function Home() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
+
   const [listings, setListings] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -17,9 +20,14 @@ function Home() {
     setError(false);
     
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    const url = selectedCategory === 'all'
-      ? `${baseUrl}/api/listings`
-      : `${baseUrl}/api/listings?type=${selectedCategory}`;
+    let url = `${baseUrl}/api/listings`;
+    const params = new URLSearchParams();
+    if (selectedCategory !== 'all') params.append('type', selectedCategory);
+    if (searchQuery) params.append('search', searchQuery);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
 
     fetch(url)
       .then((res) => {
@@ -31,11 +39,11 @@ function Home() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error fetching listings:", err);
+        console.error("Failed to load listings:", err);
         setError(true);
         setLoading(false);
       });
-  }, [selectedCategory]);
+  }, [selectedCategory, searchQuery]);
 
   return (
     <div className="flex flex-col min-h-screen">

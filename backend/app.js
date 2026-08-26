@@ -131,8 +131,8 @@ app.post('/api/listings', authenticateToken, async (req, res) => {
 
 app.get('/api/listings', async (req, res) => {
   try {
-    const { type } = req.query;
-    const listings = await getListings(type);
+    const { type, search } = req.query;
+    const listings = await getListings(type, search);
     res.json(listings);
   } catch (error) {
     console.error("Error fetching listings:", error);

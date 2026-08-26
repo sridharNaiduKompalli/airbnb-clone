@@ -1,4 +1,4 @@
-﻿import pg from 'pg';
+import pg from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -746,14 +746,29 @@ export async function initializeDatabase() {
 }
 
 // CRUD Wrappers
-export async function getListings(typeFilter) {
+export async function getListings(typeFilter, searchQuery) {
   if (isPostgres) {
     try {
+      let query = 'SELECT * FROM listings';
+      const params = [];
+      const conditions = [];
+
       if (typeFilter) {
-        const res = await pool.query('SELECT * FROM listings WHERE type = $1', [typeFilter]);
-        return res.rows;
+        params.push(typeFilter);
+        conditions.push(`type = $${params.length}`);
       }
-      const res = await pool.query('SELECT * FROM listings ORDER BY id ASC');
+
+      if (searchQuery) {
+        params.push(`%${searchQuery}%`);
+        conditions.push(`(location ILIKE $${params.length} OR title ILIKE $${params.length})`);
+      }
+
+      if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+      }
+
+      query += ' ORDER BY id ASC';
+      const res = await pool.query(query, params);
       return res.rows;
     } catch (error) {
       console.error("Postgres error, using mock data:", error);
@@ -761,10 +776,15 @@ export async function getListings(typeFilter) {
   }
 
   // Fallback
+  let results = mockListings;
   if (typeFilter) {
-    return mockListings.filter(l => l.type === typeFilter);
+    results = results.filter(l => l.type === typeFilter);
   }
-  return mockListings;
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    results = results.filter(l => l.location.toLowerCase().includes(q) || l.title.toLowerCase().includes(q));
+  }
+  return results;
 }
 
 export async function getListingById(id) {
