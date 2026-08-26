@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import Home from './pages/Home.jsx';
@@ -18,7 +18,7 @@ function App() {
   // Monitor backend health
   useEffect(() => {
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    fetch(${baseUrl}/api/health)
+    fetch(`${baseUrl}/api/health`)
       .then(res => res.json())
       .then(data => setApiHealth(data))
       .catch(err => {
