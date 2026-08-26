@@ -49,8 +49,19 @@ function Header({ apiHealth }) {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="text-sm font-semibold px-2 w-48 outline-none bg-transparent placeholder-gray-500"
           />
-          <span className="text-sm font-semibold px-4 border-l border-r border-gray-200 text-gray-500">Any week</span>
-          <span className="text-sm text-gray-500 px-4">Add guests</span>
+          <input 
+            type="text"
+            placeholder="Any week"
+            onFocus={(e) => (e.target.type = 'date')}
+            onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
+            className="text-sm font-semibold px-4 w-36 border-l border-r border-gray-200 outline-none bg-transparent text-gray-500 cursor-pointer text-center"
+          />
+          <input 
+            type="number" 
+            placeholder="Add guests" 
+            min="1"
+            className="text-sm text-gray-500 px-4 w-28 outline-none bg-transparent placeholder-gray-500 text-center"
+          />
           <button type="submit" className="bg-brand text-white p-2 rounded-full hover:bg-rose-600 transition">
             <Search className="h-4 w-4" />
           </button>
