@@ -1,5 +1,8 @@
 # Airbnb Clone - DevOps Showcase Project
 
+**🟢 Live Website Demo:** [https://airbnb-clone-5u28.vercel.app](https://airbnb-clone-5u28.vercel.app)
+**🛠️ CI/CD Status:** [![Continuous Integration](https://github.com/sridharNaiduKompalli/airbnb-clone/actions/workflows/ci.yml/badge.svg)](https://github.com/sridharNaiduKompalli/airbnb-clone/actions)
+
 A full-stack Airbnb clone designed specifically to demonstrate **DevOps best practices**, containerization, CI/CD automation, Infrastructure as Code (IaC), and cloud orchestration.
 
 This repository contains a modular React SPA frontend, a Node.js Express REST API backend, and comprehensive DevOps integrations that enable seamless local development and production-ready deployments using **free-tier cloud services**.
