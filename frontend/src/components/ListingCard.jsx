@@ -51,7 +51,7 @@ function ListingCard({ listing, showTotal, onClick }) {
           <div className="flex items-center space-x-1 shrink-0">
             <Star className="h-3.5 w-3.5 fill-black text-black" />
             <span className="text-gray-900 font-medium">
-              {listing.rating.toFixed(2)}
+              {Number(listing.rating).toFixed(2)}
             </span>
           </div>
         </div>

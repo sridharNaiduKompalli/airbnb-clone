@@ -8,11 +8,13 @@ export default function Checkout() {
   const { user, token } = useAuthStore();
   const [loading, setLoading] = useState(false);
 
-  // If accessed without proper state (not from a listing page)
-  if (!state?.listing) {
-    navigate('/');
-    return null;
-  }
+  React.useEffect(() => {
+    if (!state?.listing) {
+      navigate('/');
+    }
+  }, [state, navigate]);
+
+  if (!state?.listing) return null;
 
   const { listing, checkIn, checkOut } = state;
   const nights = 3; // Hardcoded for demo, normally calculated from dates

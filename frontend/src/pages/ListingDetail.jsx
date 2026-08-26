@@ -100,7 +100,7 @@ function ListingDetail() {
           <div className="flex items-center space-x-3">
             <span className="flex items-center text-gray-950 font-semibold">
               <Star className="h-4 w-4 fill-black text-black mr-1" />
-              {listing.rating.toFixed(2)}
+              {Number(listing.rating).toFixed(2)}
             </span>
             <span>•</span>
             <span className="underline cursor-pointer hover:text-black">{listing.reviews_count} reviews</span>
@@ -242,7 +242,7 @@ function ListingDetail() {
               </div>
               <div className="flex items-center space-x-1 text-sm font-semibold">
                 <Star className="h-3.5 w-3.5 fill-black text-black" />
-                <span>{listing.rating.toFixed(2)}</span>
+                <span>{Number(listing.rating).toFixed(2)}</span>
                 <span className="text-gray-400 font-normal">•</span>
                 <span className="underline text-gray-500 font-normal">{listing.reviews_count} reviews</span>
               </div>

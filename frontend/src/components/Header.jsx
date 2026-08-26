@@ -75,7 +75,7 @@ function Header({ apiHealth }) {
             <Menu className="h-5 w-5 text-gray-500" />
             {user ? (
               <div className="bg-brand text-white rounded-full p-1 w-6 h-6 flex items-center justify-center font-bold text-xs uppercase">
-                {user.name.charAt(0)}
+                {user?.name ? user.name.charAt(0) : 'U'}
               </div>
             ) : (
               <div className="bg-gray-500 text-white rounded-full p-1">
