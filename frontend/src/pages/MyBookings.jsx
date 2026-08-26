@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, User, DollarSign, ArrowLeft } from 'lucide-react';
 import Loader from '../components/Loader.jsx';
 
-function MyBookings({ onNavigate }) {
+function MyBookings() {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -10,7 +12,9 @@ function MyBookings({ onNavigate }) {
   useEffect(() => {
     setLoading(true);
     setError(false);
-    fetch('/api/bookings')
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    
+    fetch(`${baseUrl}/api/bookings`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch bookings");
         return res.json();
@@ -41,7 +45,7 @@ function MyBookings({ onNavigate }) {
           <h3 className="text-lg font-bold text-gray-900 mb-2">Could not retrieve bookings</h3>
           <p className="text-gray-500 mb-6">Please ensure the backend service and database are active.</p>
           <button
-            onClick={() => onNavigate('home')}
+            onClick={() => navigate('/')}
             className="bg-brand text-white px-6 py-2 rounded-lg font-semibold"
           >
             Go Back Home
@@ -56,7 +60,7 @@ function MyBookings({ onNavigate }) {
             Time to dust off your bags and start planning your next getaway. Explore stays to find the perfect home.
           </p>
           <button
-            onClick={() => onNavigate('home')}
+            onClick={() => navigate('/')}
             className="bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-brand-dark transition font-semibold shadow-sm"
           >
             Start Searching
@@ -111,7 +115,7 @@ function MyBookings({ onNavigate }) {
                 <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-400 flex justify-between items-center">
                   <span>Reserved on: {new Date(booking.created_at || Date.now()).toLocaleDateString()}</span>
                   <button
-                    onClick={() => onNavigate('detail', booking.listing_id)}
+                    onClick={() => navigate(`/listing/${booking.listing_id}`)}
                     className="text-brand hover:underline font-semibold text-sm"
                   >
                     View Details

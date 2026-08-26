@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar.jsx';
 import ListingCard from '../components/ListingCard.jsx';
 import Loader from '../components/Loader.jsx';
 
-function Home({ onNavigate }) {
+function Home() {
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -14,9 +16,10 @@ function Home({ onNavigate }) {
     setLoading(true);
     setError(false);
     
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const url = selectedCategory === 'all'
-      ? '/api/listings'
-      : `/api/listings?type=${selectedCategory}`;
+      ? `${baseUrl}/api/listings`
+      : `${baseUrl}/api/listings?type=${selectedCategory}`;
 
     fetch(url)
       .then((res) => {
@@ -109,7 +112,7 @@ function Home({ onNavigate }) {
                 key={listing.id}
                 listing={listing}
                 showTotal={showTotalWithTaxes} // Forward pricing mode
-                onClick={() => onNavigate('detail', listing.id)}
+                onClick={() => navigate(`/listing/${listing.id}`)}
               />
             ))}
           </div>

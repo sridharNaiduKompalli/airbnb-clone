@@ -288,6 +288,18 @@ export async function initializeDatabase() {
 
   const client = await pool.connect();
   try {
+    // Create users table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        role VARCHAR(20) DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Create listings table
     await client.query(`
       CREATE TABLE IF NOT EXISTS listings (
@@ -298,12 +310,13 @@ export async function initializeDatabase() {
         location VARCHAR(255) NOT NULL,
         image TEXT NOT NULL,
         images TEXT[] NOT NULL,
-        rating NUMERIC(3, 2) NOT NULL,
-        reviews_count INTEGER NOT NULL,
+        rating NUMERIC(3, 2) NOT NULL DEFAULT 5.0,
+        reviews_count INTEGER NOT NULL DEFAULT 0,
         type VARCHAR(50) NOT NULL,
         host_name VARCHAR(100) NOT NULL,
         host_avatar TEXT NOT NULL,
-        amenities TEXT[] NOT NULL
+        amenities TEXT[] NOT NULL,
+        host_id INTEGER REFERENCES users(id) ON DELETE SET NULL
       );
     `);
 
@@ -312,23 +325,37 @@ export async function initializeDatabase() {
       CREATE TABLE IF NOT EXISTS bookings (
         id SERIAL PRIMARY KEY,
         listing_id INTEGER REFERENCES listings(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         check_in VARCHAR(50) NOT NULL,
         check_out VARCHAR(50) NOT NULL,
         guest_name VARCHAR(100) NOT NULL,
         total_price INTEGER NOT NULL,
+        payment_status VARCHAR(50) DEFAULT 'completed',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // Upgrade existing tables if they were created before
+    await client.query(`ALTER TABLE listings ADD COLUMN IF NOT EXISTS host_id INTEGER REFERENCES users(id) ON DELETE SET NULL;`).catch(() => {});
+    await client.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;`).catch(() => {});
+    await client.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_status VARCHAR(50) DEFAULT 'completed';`).catch(() => {});
 
     // Seed mock data if listings table is empty
     const checkListings = await client.query('SELECT COUNT(*) FROM listings');
     if (parseInt(checkListings.rows[0].count) === 0) {
       console.log("Seeding initial mock listings to PostgreSQL...");
+      // Add default admin user
+      const adminInsert = await client.query(
+        `INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email RETURNING id`,
+        ['Admin User', 'admin@tropica.com', '$2b$10$C8.1zM.1T1/aG0.1H1.1/.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1', 'admin'] // Fake hash for mock, they should register
+      );
+      const adminId = adminInsert.rows[0].id;
+
       for (const item of mockListings) {
         await client.query(
-          `INSERT INTO listings (id, title, description, price, location, image, images, rating, reviews_count, type, host_name, host_avatar, amenities)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-          [item.id, item.title, item.description, item.price, item.location, item.image, item.images || [item.image], item.rating, item.reviews_count, item.type, item.host_name, item.host_avatar, item.amenities]
+          `INSERT INTO listings (id, title, description, price, location, image, images, rating, reviews_count, type, host_name, host_avatar, amenities, host_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+          [item.id, item.title, item.description, item.price, item.location, item.image, item.images || [item.image], item.rating, item.reviews_count, item.type, item.host_name, item.host_avatar, item.amenities, adminId]
         );
       }
       console.log("Mock listings seeded successfully.");
@@ -433,6 +460,78 @@ export async function getBookings() {
       listing_location: listing.location || "Unknown Location"
     };
   });
+}
+
+// Auth wrappers
+export async function getUserByEmail(email) {
+  if (isPostgres) {
+    try {
+      const res = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      return res.rows[0] || null;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return null;
+}
+
+export async function createUser(user) {
+  if (isPostgres) {
+    try {
+      const res = await pool.query(
+        'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, role',
+        [user.name, user.email, user.password_hash]
+      );
+      return res.rows[0];
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+  return null;
+}
+
+// Host wrappers
+export async function createListing(listing, hostId, hostName) {
+  if (isPostgres) {
+    try {
+      const res = await pool.query(
+        `INSERT INTO listings (title, description, price, location, image, images, rating, reviews_count, type, host_name, host_avatar, amenities, host_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+        [
+          listing.title, listing.description, listing.price, listing.location, 
+          listing.images[0], listing.images, 5.0, 0, listing.type || 'cabins', 
+          hostName, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150', 
+          listing.amenities || ['Wifi'], hostId
+        ]
+      );
+      return res.rows[0];
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+  return null;
+}
+
+export async function getDashboardStats() {
+  if (isPostgres) {
+    try {
+      const users = await pool.query('SELECT COUNT(*) FROM users');
+      const listings = await pool.query('SELECT COUNT(*) FROM listings');
+      const bookings = await pool.query('SELECT COUNT(*) as count, SUM(total_price) as revenue FROM bookings');
+      
+      return {
+        users: parseInt(users.rows[0].count),
+        listings: parseInt(listings.rows[0].count),
+        bookings: parseInt(bookings.rows[0].count),
+        revenue: parseInt(bookings.rows[0].revenue || 0)
+      };
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return { users: 0, listings: 0, bookings: 0, revenue: 0 };
 }
 
 // Export raw pool for tests or custom operations

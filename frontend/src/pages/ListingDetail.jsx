@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Star, Share, Heart, Shield, Award } from 'lucide-react';
 import Loader from '../components/Loader.jsx';
 
-function ListingDetail({ id, onNavigate }) {
+function ListingDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -10,14 +14,13 @@ function ListingDetail({ id, onNavigate }) {
   // Booking Form State
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
-  const [guestName, setGuestName] = useState('');
-  const [bookingLoading, setBookingLoading] = useState(false);
-  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     setError(false);
-    fetch(`/api/listings/${id}`)
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    
+    fetch(`${baseUrl}/api/listings/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load listing details");
         return res.json();
@@ -50,49 +53,17 @@ function ListingDetail({ id, onNavigate }) {
 
   const handleBookingSubmit = (e) => {
     e.preventDefault();
-    if (!checkIn || !checkOut || !guestName) {
-      alert("Please fill in all details");
+    if (!checkIn || !checkOut) {
+      alert("Please select check-in and check-out dates.");
       return;
     }
     if (days <= 0) {
-      alert("Check-out date must be after check-in date");
+      alert("Check-out date must be after check-in date.");
       return;
     }
 
-    setBookingLoading(true);
-
-    const bookingPayload = {
-      listing_id: listing.id,
-      check_in: checkIn,
-      check_out: checkOut,
-      guest_name: guestName,
-      total_price: totalPrice
-    };
-
-    fetch('/api/bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(bookingPayload)
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to create booking");
-        return res.json();
-      })
-      .then(() => {
-        setBookingLoading(false);
-        setBookingSuccess(true);
-        // Navigate to my bookings after 2 seconds
-        setTimeout(() => {
-          onNavigate('bookings');
-        }, 1500);
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("Booking failed. Please try again.");
-        setBookingLoading(false);
-      });
+    // Pass booking details to checkout page
+    navigate('/checkout', { state: { listing, checkIn, checkOut, totalPrice } });
   };
 
   if (loading) {
@@ -104,7 +75,7 @@ function ListingDetail({ id, onNavigate }) {
       <div className="max-w-xl mx-auto px-4 py-16 text-center">
         <h3 className="text-xl font-bold text-gray-900 mb-2">Listing not found</h3>
         <p className="text-gray-500 mb-6">The listing you requested could not be retrieved.</p>
-        <button onClick={() => onNavigate('home')} className="bg-brand text-white px-6 py-2 rounded-lg font-semibold">
+        <button onClick={() => navigate('/')} className="bg-[#1D3E2F] text-white px-6 py-2 rounded-lg font-semibold">
           Return Home
         </button>
       </div>
@@ -115,7 +86,7 @@ function ListingDetail({ id, onNavigate }) {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Back Button */}
       <button
-        onClick={() => onNavigate('home')}
+        onClick={() => navigate('/')}
         className="inline-flex items-center space-x-1 text-sm font-semibold text-gray-700 hover:text-black mb-6 hover:underline"
       >
         <ChevronLeft className="h-5 w-5" />
@@ -277,19 +248,7 @@ function ListingDetail({ id, onNavigate }) {
               </div>
             </div>
 
-            {bookingSuccess ? (
-              /* Success Message Overlay */
-              <div className="text-center py-8">
-                <div className="h-12 w-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-4">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h4 className="font-bold text-lg text-gray-900 mb-1">Reservation Confirmed!</h4>
-                <p className="text-sm text-gray-500">Redirecting to your bookings...</p>
-              </div>
-            ) : (
-              /* Reservation Form */
+              {/* Reservation Form */}
               <form onSubmit={handleBookingSubmit} className="space-y-4">
                 <div className="border border-gray-300 rounded-xl overflow-hidden divide-y divide-gray-300">
                   <div className="grid grid-cols-2">
@@ -314,25 +273,13 @@ function ListingDetail({ id, onNavigate }) {
                       />
                     </div>
                   </div>
-                  <div className="p-3">
-                    <label className="block text-[10px] font-bold text-gray-900 uppercase">Guest Name</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Enter full name"
-                      value={guestName}
-                      onChange={(e) => setGuestName(e.target.value)}
-                      className="w-full text-sm text-gray-800 bg-transparent border-0 p-0 focus:ring-0 mt-1 focus:outline-none"
-                    />
-                  </div>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={bookingLoading}
-                  className="w-full bg-gradient-to-r from-[#E61E4D] via-[#E31C5F] to-[#D70466] text-white py-3.5 rounded-lg font-semibold active:scale-[0.98] hover:brightness-105 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-gradient-to-r from-[#E61E4D] via-[#E31C5F] to-[#D70466] text-white py-3.5 rounded-lg font-semibold active:scale-[0.98] hover:brightness-105 transition-all shadow-md"
                 >
-                  {bookingLoading ? "Reserving..." : "Reserve"}
+                  Reserve
                 </button>
 
                 {/* Pricing breakdowns */}
@@ -355,7 +302,6 @@ function ListingDetail({ id, onNavigate }) {
                   </div>
                 )}
               </form>
-            )}
 
           </div>
         </div>
