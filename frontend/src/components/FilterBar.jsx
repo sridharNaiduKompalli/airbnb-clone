@@ -22,15 +22,12 @@ function FilterBar({ selectedCategory, onSelectCategory }) {
 
   useEffect(() => {
     const activeBtn = buttonRefs.current[selectedCategory];
-    const container = containerRef.current;
-    if (!activeBtn || !container) return;
+    if (!activeBtn) return;
 
-    const containerRect = container.getBoundingClientRect();
-    const btnRect = activeBtn.getBoundingClientRect();
-
+    // Use offsetLeft instead of getBoundingClientRect to correctly account for horizontal scroll
     setPillStyle({
-      left: btnRect.left - containerRect.left,
-      width: btnRect.width,
+      left: activeBtn.offsetLeft,
+      width: activeBtn.offsetWidth,
       opacity: 1,
     });
   }, [selectedCategory]);
