@@ -1,0 +1,74 @@
+import React from 'react';
+import { Search, Globe, Menu, User, Activity } from 'lucide-react';
+
+function Header({ currentPage, onNavigate, apiHealth }) {
+  return (
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        
+        {/* Logo */}
+        <div className="flex items-center cursor-pointer" onClick={() => onNavigate('home')}>
+          <img
+            src="https://logodownload.org/wp-content/uploads/2016/10/airbnb-logo-3-1.png"
+            alt="Airbnb Logo"
+            className="h-7 w-auto object-contain"
+          />
+        </div>
+
+        {/* Center Search Bar Placeholder */}
+        <div className="hidden md:flex items-center border border-gray-200 rounded-full py-2 px-4 shadow-sm hover:shadow-md cursor-pointer transition">
+          <span className="text-sm font-semibold px-4 border-r border-gray-200">Anywhere</span>
+          <span className="text-sm font-semibold px-4 border-r border-gray-200">Any week</span>
+          <span className="text-sm text-gray-500 px-4">Add guests</span>
+          <div className="bg-brand text-white p-2 rounded-full">
+            <Search className="h-4 w-4" />
+          </div>
+        </div>
+
+        {/* Right Nav */}
+        <div className="flex items-center space-x-4">
+          {/* Health Badge */}
+          <div className="flex items-center">
+            {apiHealth ? (
+              apiHealth.status === "UP" ? (
+                <div className="flex items-center bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-semibold border border-green-200">
+                  <Activity className="h-3.5 w-3.5 mr-1 animate-pulse" />
+                  API connected
+                </div>
+              ) : (
+                <div className="flex items-center bg-red-50 text-red-700 px-3 py-1 rounded-full text-xs font-semibold border border-red-200">
+                  <Activity className="h-3.5 w-3.5 mr-1" />
+                  API offline
+                </div>
+              )
+            ) : (
+              <div className="flex items-center bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold border border-yellow-200">
+                <Activity className="h-3.5 w-3.5 mr-1 animate-spin" />
+                Connecting...
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => onNavigate('bookings')}
+            className={`text-sm font-semibold px-4 py-2 rounded-full hover:bg-gray-100 transition ${
+              currentPage === 'bookings' ? 'bg-gray-100 text-brand' : 'text-gray-700'
+            }`}
+          >
+            My Bookings
+          </button>
+
+          <div className="flex items-center space-x-2 border border-gray-200 rounded-full p-2 hover:shadow-md cursor-pointer transition">
+            <Menu className="h-5 w-5 text-gray-500" />
+            <div className="bg-gray-500 text-white rounded-full p-1">
+              <User className="h-4 w-4" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </header>
+  );
+}
+
+export default Header;

@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Database Service (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: airbnb-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: airbnb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d airbnb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - airbnb-network
+
+  # Backend Service (Node.js/Express REST API)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: airbnb-backend
+    environment:
+      DATABASE_URL: postgres://postgres:postgrespassword@db:5432/airbnb
+      PORT: 5000
+      NODE_ENV: production
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - airbnb-network
+
+  # Frontend Service (React + Nginx proxy)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: airbnb-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - airbnb-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  airbnb-network:
+    driver: bridge

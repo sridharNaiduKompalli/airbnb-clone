@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbnb-frontend-deployment
+  labels:
+    app: airbnb
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: airbnb
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: airbnb
+        component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: airbnb-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            limits:
+              cpu: "300m"
+              memory: "128Mi"
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 10

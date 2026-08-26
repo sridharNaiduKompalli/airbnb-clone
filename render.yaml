@@ -1,0 +1,40 @@
+services:
+  # 1. Express Backend Container Web Service
+  - type: web
+    name: airbnb-clone-backend
+    env: docker # Builds automatically using our multi-stage Dockerfile
+    plan: free
+    region: oregon
+    rootDir: backend
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: airbnb-clone-db
+          property: connectionString
+
+  # 2. React Frontend Static Site
+  - type: web
+    name: airbnb-clone-frontend
+    env: static
+    plan: free
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: airbnb-clone-backend
+          value: url
+
+databases:
+  # 3. Managed PostgreSQL Database
+  - name: airbnb-clone-db
+    plan: free
+    region: oregon
+    databaseName: airbnb
+    user: postgres
