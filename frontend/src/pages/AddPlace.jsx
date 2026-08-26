@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 
@@ -82,7 +82,11 @@ export default function AddPlace() {
                 <option value="treehouses">Treehouses</option>
                 <option value="desert">Desert</option>
                 <option value="historic">Historic</option>
-                <option value="lake">Lake</option>
+                <option value="lake">Lakefront</option>
+                <option value="mountain">Mountain</option>
+                <option value="tropical">Tropical</option>
+                <option value="arctic">Arctic</option>
+                <option value="glamping">Glamping</option>
               </select>
             </div>
           </div>

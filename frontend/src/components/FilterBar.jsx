@@ -1,35 +1,70 @@
-import React from 'react';
-import { Compass, TreePine, Waves, Trees, Sun, Milestone, Anchor } from 'lucide-react';
+﻿import React, { useRef, useEffect, useState } from 'react';
+import { Compass, TreePine, Waves, Trees, Sun, Milestone, Anchor, Castle, Mountain, Umbrella, Wind, Flame } from 'lucide-react';
 
 const categories = [
-  { id: 'all', label: 'All', icon: Compass },
-  { id: 'cabins', label: 'Cabins', icon: TreePine },
-  { id: 'beachfront', label: 'Beachfront', icon: Waves },
-  { id: 'treehouses', label: 'Treehouses', icon: Trees },
-  { id: 'desert', label: 'Desert', icon: Sun },
-  { id: 'historic', label: 'Historic', icon: Milestone },
-  { id: 'lake', label: 'Lakefront', icon: Anchor },
+  { id: 'all',        label: 'All',        icon: Compass   },
+  { id: 'cabins',     label: 'Cabins',     icon: TreePine  },
+  { id: 'beachfront', label: 'Beachfront', icon: Waves     },
+  { id: 'treehouses', label: 'Treehouses', icon: Trees     },
+  { id: 'desert',     label: 'Desert',     icon: Sun       },
+  { id: 'historic',   label: 'Historic',   icon: Castle    },
+  { id: 'lake',       label: 'Lakefront',  icon: Anchor    },
+  { id: 'mountain',   label: 'Mountain',   icon: Mountain  },
+  { id: 'tropical',   label: 'Tropical',   icon: Umbrella  },
+  { id: 'arctic',     label: 'Arctic',     icon: Wind      },
+  { id: 'glamping',   label: 'Glamping',   icon: Flame     },
 ];
 
 function FilterBar({ selectedCategory, onSelectCategory }) {
+  const containerRef = useRef(null);
+  const buttonRefs = useRef({});
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
+
+  useEffect(() => {
+    const activeBtn = buttonRefs.current[selectedCategory];
+    const container = containerRef.current;
+    if (!activeBtn || !container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+
+    setPillStyle({
+      left: btnRect.left - containerRect.left,
+      width: btnRect.width,
+      opacity: 1,
+    });
+  }, [selectedCategory]);
+
   return (
     <div className="bg-[#FAF6F0] border-b border-[#E2DCD5] py-4 sticky top-20 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar p-1.5 bg-[#E8E2D9] rounded-full max-w-max mx-auto shadow-inner border border-[#DCD6CC]">
+        <div
+          ref={containerRef}
+          className="relative flex items-center space-x-1 overflow-x-auto no-scrollbar p-1.5 bg-[#E8E2D9] rounded-full max-w-max mx-auto shadow-inner border border-[#DCD6CC]"
+        >
+          {/* Animated sliding pill background */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1.5 rounded-full bg-[#2D4030] shadow-md transition-all duration-300 ease-[cubic-bezier(0.68,-0.55,0.27,1.55)]"
+            style={{
+              left: pillStyle.left,
+              width: pillStyle.width,
+              height: 'calc(100% - 12px)',
+              opacity: pillStyle.opacity,
+            }}
+          />
+
           {categories.map((cat) => {
             const Icon = cat.icon;
             const isActive = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
+                ref={(el) => (buttonRefs.current[cat.id] = el)}
                 onClick={() => onSelectCategory(cat.id)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1) select-none focus:outline-none active:scale-[0.95] ${
-                  isActive
-                    ? 'bg-[#2D4030] text-[#FAF6F0] shadow-md transform scale-[1.03]'
-                    : 'text-[#605549] hover:text-[#2D4030] hover:bg-[#E2DCD5]/50'
-                }`}
+                className={elative z-10 flex items-center space-x-2 px-4 py-2 rounded-full select-none focus:outline-none transition-colors duration-200 active:scale-[0.95] }
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4 flex-shrink-0" />
                 <span className="text-xs font-semibold whitespace-nowrap">{cat.label}</span>
               </button>
             );
