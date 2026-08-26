@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Sparkles } from 'lucide-react';
 import useWishlistStore from '../store/useWishlistStore';
@@ -26,7 +26,7 @@ export default function Wishlist() {
           <p className="text-sm text-[#FAF6F0]/70 max-w-lg mx-auto font-light">
             {items.length === 0
               ? 'Start saving places you love — click the heart icon on any listing.'
-              : ${items.length} place saved to your wishlist.}
+              : `${items.length} place${items.length === 1 ? '' : 's'} saved to your wishlist.`}
           </p>
         </div>
       </div>

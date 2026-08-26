@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Star } from 'lucide-react';
 import useWishlistStore from '../store/useWishlistStore';
 
@@ -39,7 +39,9 @@ function ListingCard({ listing, showTotal, onClick }) {
           title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >
           <svg
-            className={h-6 w-6 stroke-[2] drop-shadow-md transition-all duration-200 }
+            className={`h-6 w-6 stroke-[2] drop-shadow-md transition-all duration-200 ${
+              wishlisted ? 'fill-red-500 stroke-red-500' : 'fill-none stroke-white'
+            }`}
             viewBox="0 0 32 32"
           >
             <path d="M16 28c7-4.733 14-10 14-17 0-4.333-3.413-8-8-8-3.08 0-5.747 1.893-7 4.787C13.747 4.893 11.08 3 8 3 3.413 3 0 6.667 0 11c0 7 7 12.267 14 17z" />

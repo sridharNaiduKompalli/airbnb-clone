@@ -1,4 +1,4 @@
-﻿import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Compass, TreePine, Waves, Trees, Sun, Milestone, Anchor, Castle, Mountain, Umbrella, Wind, Flame } from 'lucide-react';
 
 const categories = [
@@ -56,13 +56,15 @@ function FilterBar({ selectedCategory, onSelectCategory }) {
 
           {categories.map((cat) => {
             const Icon = cat.icon;
-            const isActive = selectedCategory === cat.id;
+            const isSelected = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 ref={(el) => (buttonRefs.current[cat.id] = el)}
                 onClick={() => onSelectCategory(cat.id)}
-                className={elative z-10 flex items-center space-x-2 px-4 py-2 rounded-full select-none focus:outline-none transition-colors duration-200 active:scale-[0.95] }
+                className={`relative z-10 flex items-center space-x-2 px-4 py-2 rounded-full select-none focus:outline-none transition-colors duration-200 active:scale-[0.95] ${
+                  isSelected ? 'text-[#FAF6F0]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/80'
+                }`}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />
                 <span className="text-xs font-semibold whitespace-nowrap">{cat.label}</span>

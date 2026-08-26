@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Search, Globe, Menu, User, Activity, LogOut, LayoutDashboard, PlusCircle, Heart, UserCircle, Bookmark } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
@@ -77,7 +77,7 @@ function Header({ apiHealth }) {
             className="relative p-2 rounded-full hover:bg-gray-100 transition"
             title="My Wishlist"
           >
-            <Heart className={h-5 w-5 transition-colors } />
+            <Heart className="h-5 w-5 transition-colors" />
             {wishlistItems.length > 0 && (
               <span className="absolute -top-1 -right-1 bg-[#E61E4D] text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full leading-none">
                 {wishlistItems.length > 9 ? '9+' : wishlistItems.length}
