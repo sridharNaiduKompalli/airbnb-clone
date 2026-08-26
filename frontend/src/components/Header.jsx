@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Globe, Menu, User, Activity, LogOut, LayoutDashboard, PlusCircle } from 'lucide-react';
+import { Search, Globe, Menu, User, Activity, LogOut, LayoutDashboard, PlusCircle, Heart, UserCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 
@@ -94,6 +94,11 @@ function Header({ apiHealth }) {
                     <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
                   
+                  <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100">
+                    <UserCircle className="w-4 h-4 mr-3 text-gray-400" />
+                    My Dashboard
+                  </Link>
+
                   {user.role === 'admin' && (
                     <Link to="/admin" onClick={() => setDropdownOpen(false)} className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100">
                       <LayoutDashboard className="w-4 h-4 mr-3 text-gray-400" />
@@ -103,6 +108,11 @@ function Header({ apiHealth }) {
                   
                   <Link to="/bookings" onClick={() => setDropdownOpen(false)} className="block px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100">
                     My Bookings
+                  </Link>
+
+                  <Link to="/favourites" onClick={() => setDropdownOpen(false)} className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100">
+                    <Heart className="w-4 h-4 mr-3 text-gray-400" />
+                    My Favourites
                   </Link>
                   
                   <Link to="/add-place" onClick={() => setDropdownOpen(false)} className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100">

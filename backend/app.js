@@ -3,7 +3,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { getListings, getListingById, createBooking, getBookings, initializeDatabase, getUserByEmail, createUser, createListing, getDashboardStats } from './db.js';
+import {
+  getListings, getListingById, createBooking, getBookings, initializeDatabase,
+  getUserByEmail, createUser, createListing, getDashboardStats,
+  getFavourites, addFavourite, removeFavourite, isFavourite,
+  getUserProfile, getUserListings, getUserBookings, updateUserProfile,
+  getAllUsers, getAllBookings
+} from './db.js';
 
 dotenv.config();
 
@@ -180,6 +186,95 @@ app.post('/api/bookings', async (req, res) => {
     console.error("Error creating booking:", error);
     res.status(500).json({ error: "Failed to create booking" });
   }
+});
+
+// --- FAVOURITES ROUTES ---
+app.get('/api/favourites', authenticateToken, async (req, res) => {
+  try {
+    const favs = await getFavourites(req.user.id);
+    res.json(favs);
+  } catch (error) { res.status(500).json({ error: 'Failed to get favourites' }); }
+});
+
+app.post('/api/favourites/:listingId', authenticateToken, async (req, res) => {
+  try {
+    await addFavourite(req.user.id, parseInt(req.params.listingId));
+    res.status(201).json({ success: true });
+  } catch (error) { res.status(500).json({ error: 'Failed to add favourite' }); }
+});
+
+app.delete('/api/favourites/:listingId', authenticateToken, async (req, res) => {
+  try {
+    await removeFavourite(req.user.id, parseInt(req.params.listingId));
+    res.json({ success: true });
+  } catch (error) { res.status(500).json({ error: 'Failed to remove favourite' }); }
+});
+
+app.get('/api/favourites/:listingId/check', authenticateToken, async (req, res) => {
+  try {
+    const fav = await isFavourite(req.user.id, parseInt(req.params.listingId));
+    res.json({ isFavourite: fav });
+  } catch (error) { res.status(500).json({ error: 'Failed to check favourite' }); }
+});
+
+// --- USER DASHBOARD ROUTES ---
+app.get('/api/users/profile', authenticateToken, async (req, res) => {
+  try {
+    const profile = await getUserProfile(req.user.id);
+    if (!profile) return res.status(404).json({ error: 'User not found' });
+    res.json(profile);
+  } catch (error) { res.status(500).json({ error: 'Failed to get profile' }); }
+});
+
+app.put('/api/users/profile', authenticateToken, async (req, res) => {
+  try {
+    const updated = await updateUserProfile(req.user.id, req.body);
+    res.json(updated);
+  } catch (error) { res.status(500).json({ error: 'Failed to update profile' }); }
+});
+
+app.get('/api/users/my-listings', authenticateToken, async (req, res) => {
+  try {
+    const listings = await getUserListings(req.user.id);
+    res.json(listings);
+  } catch (error) { res.status(500).json({ error: 'Failed to get listings' }); }
+});
+
+app.get('/api/users/my-bookings', authenticateToken, async (req, res) => {
+  try {
+    const bookings = await getUserBookings(req.user.id);
+    res.json(bookings);
+  } catch (error) { res.status(500).json({ error: 'Failed to get bookings' }); }
+});
+
+// --- EXPANDED ADMIN ROUTES ---
+app.get('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const users = await getAllUsers();
+    res.json(users);
+  } catch (error) { res.status(500).json({ error: 'Failed to get users' }); }
+});
+
+app.get('/api/admin/bookings', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const bookings = await getAllBookings();
+    res.json(bookings);
+  } catch (error) { res.status(500).json({ error: 'Failed to get bookings' }); }
+});
+
+app.get('/api/admin/listings', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const listings = await getListings();
+    res.json(listings);
+  } catch (error) { res.status(500).json({ error: 'Failed to get listings' }); }
+});
+
+app.delete('/api/admin/listings/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { pool } = await import('./db.js');
+    await pool.query('DELETE FROM listings WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (error) { res.status(500).json({ error: 'Failed to delete listing' }); }
 });
 
 // Global Error Handler

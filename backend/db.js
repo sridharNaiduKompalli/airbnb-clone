@@ -559,5 +559,167 @@ export async function getDashboardStats() {
   return { users: 0, listings: 0, bookings: 0, revenue: 0 };
 }
 
+// --- FAVOURITES ---
+export async function getFavourites(userId) {
+  if (isPostgres) {
+    try {
+      const res = await pool.query(`
+        SELECT l.*, f.created_at as favourited_at
+        FROM favourites f
+        JOIN listings l ON f.listing_id = l.id
+        WHERE f.user_id = $1
+        ORDER BY f.created_at DESC
+      `, [userId]);
+      return res.rows;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return [];
+}
+
+export async function addFavourite(userId, listingId) {
+  if (isPostgres) {
+    try {
+      await pool.query(
+        'INSERT INTO favourites (user_id, listing_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [userId, listingId]
+      );
+      return { success: true };
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+  return { success: false };
+}
+
+export async function removeFavourite(userId, listingId) {
+  if (isPostgres) {
+    try {
+      await pool.query(
+        'DELETE FROM favourites WHERE user_id = $1 AND listing_id = $2',
+        [userId, listingId]
+      );
+      return { success: true };
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+  return { success: false };
+}
+
+export async function isFavourite(userId, listingId) {
+  if (isPostgres) {
+    try {
+      const res = await pool.query(
+        'SELECT id FROM favourites WHERE user_id = $1 AND listing_id = $2',
+        [userId, listingId]
+      );
+      return res.rows.length > 0;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return false;
+}
+
+// --- USER DASHBOARD ---
+export async function getUserProfile(userId) {
+  if (isPostgres) {
+    try {
+      const res = await pool.query(
+        'SELECT id, name, email, role, created_at FROM users WHERE id = $1',
+        [userId]
+      );
+      return res.rows[0] || null;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return null;
+}
+
+export async function getUserListings(userId) {
+  if (isPostgres) {
+    try {
+      const res = await pool.query(
+        'SELECT * FROM listings WHERE host_id = $1 ORDER BY id DESC',
+        [userId]
+      );
+      return res.rows;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return [];
+}
+
+export async function getUserBookings(userId) {
+  if (isPostgres) {
+    try {
+      const res = await pool.query(`
+        SELECT b.*, l.title as listing_title, l.image as listing_image, l.location as listing_location
+        FROM bookings b
+        LEFT JOIN listings l ON b.listing_id = l.id
+        WHERE b.user_id = $1
+        ORDER BY b.created_at DESC
+      `, [userId]);
+      return res.rows;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return [];
+}
+
+export async function updateUserProfile(userId, updates) {
+  if (isPostgres) {
+    try {
+      const res = await pool.query(
+        'UPDATE users SET name = $1 WHERE id = $2 RETURNING id, name, email, role',
+        [updates.name, userId]
+      );
+      return res.rows[0];
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+  return null;
+}
+
+// --- ADMIN: list all users and bookings ---
+export async function getAllUsers() {
+  if (isPostgres) {
+    try {
+      const res = await pool.query('SELECT id, name, email, role, created_at FROM users ORDER BY id DESC');
+      return res.rows;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return [];
+}
+
+export async function getAllBookings() {
+  if (isPostgres) {
+    try {
+      const res = await pool.query(`
+        SELECT b.*, l.title as listing_title, l.location as listing_location, u.name as user_name, u.email as user_email
+        FROM bookings b
+        LEFT JOIN listings l ON b.listing_id = l.id
+        LEFT JOIN users u ON b.user_id = u.id
+        ORDER BY b.created_at DESC
+      `);
+      return res.rows;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return [];
+}
+
 // Export raw pool for tests or custom operations
 export { pool, isPostgres };
