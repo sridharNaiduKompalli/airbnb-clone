@@ -495,13 +495,19 @@ export async function createUser(user) {
 export async function createListing(listing, hostId, hostName) {
   if (isPostgres) {
     try {
+      // Support both images[] array and single image URL
+      const imageUrl = listing.image || (listing.images && listing.images[0]) || '';
+      const imagesArray = listing.images && listing.images.length > 0
+        ? listing.images
+        : [imageUrl, imageUrl, imageUrl, imageUrl, imageUrl];
+
       const res = await pool.query(
         `INSERT INTO listings (title, description, price, location, image, images, rating, reviews_count, type, host_name, host_avatar, amenities, host_id)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
         [
-          listing.title, listing.description, listing.price, listing.location, 
-          listing.images[0], listing.images, 5.0, 0, listing.type || 'cabins', 
-          hostName, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150', 
+          listing.title, listing.description, Number(listing.price), listing.location,
+          imageUrl, imagesArray, 5.0, 0, listing.type || 'cabins',
+          hostName, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150',
           listing.amenities || ['Wifi'], hostId
         ]
       );
